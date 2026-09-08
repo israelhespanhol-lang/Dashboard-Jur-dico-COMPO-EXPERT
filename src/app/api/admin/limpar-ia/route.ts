@@ -40,7 +40,7 @@ export async function POST() {
       
       try {
         const { object } = await generateObject({
-          model: google('gemini-1.5-flash'),
+          model: google('gemini-2.0-flash'),
           schema: z.object({
             clientName: z.string().describe("Nome limpo, puro e exato do cliente/autor, sem número do processo, juiz ou CPF/CNPJ."),
             debtorName: z.string().describe("Nome limpo, puro e exato do devedor/réu, sem informações processuais."),
