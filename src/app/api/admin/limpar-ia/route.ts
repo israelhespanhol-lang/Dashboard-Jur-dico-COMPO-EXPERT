@@ -6,23 +6,20 @@ import { z } from 'zod';
 
 export async function POST() {
   try {
-    // Se a chave não existir, retornar erro amigável
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json({ error: "Chave da OpenAI não configurada (OPENAI_API_KEY)." }, { status: 400 });
     }
 
-    // Buscar processos
-    // Como o Prisma não suporta filtrar por tamanho de string diretamente, buscamos 100 e filtramos
     const processes = await prisma.process.findMany({
       take: 200,
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
+      include: { client: true }
     });
 
-    // Identificar processos "sujos" (textos gigantes indicam que veio poluído do Excel)
     const toClean = processes.filter(p => 
-      (p.client && p.client.length > 70) || 
+      (p.client?.name && p.client.name.length > 70) || 
       (p.debtorName && p.debtorName.length > 70)
-    ).slice(0, 10); // Processar 10 por vez para evitar timeout na Vercel
+    ).slice(0, 10); 
 
     if (toClean.length === 0) {
       return NextResponse.json({ message: "Sua base está impecável! Nenhum processo precisa de limpeza.", count: 0 });
@@ -33,9 +30,9 @@ export async function POST() {
     for (const proc of toClean) {
       const rawText = `
         Número: ${proc.processNumber}
-        Cliente (Bruto): ${proc.client}
-        Devedor (Bruto): ${proc.debtorName}
-        Última movimentação: ${proc.movementDetail || ''}
+        Cliente (Bruto): ${proc.client?.name || ''}
+        Devedor (Bruto): ${proc.debtorName || ''}
+        Última movimentação: ${proc.importedLastMovement || ''}
       `;
       
       try {
@@ -44,20 +41,25 @@ export async function POST() {
           schema: z.object({
             clientName: z.string().describe("Nome limpo, puro e exato do cliente/autor, sem número do processo, juiz ou CPF/CNPJ."),
             debtorName: z.string().describe("Nome limpo, puro e exato do devedor/réu, sem informações processuais."),
-            summary: z.string().describe("Resumo do caso jurídico em 1 ou 2 frases curtas (ex: 'Execução de Título Extrajudicial no valor de R$ X'). Se não houver info, coloque 'Sem informações detalhadas'.")
+            summary: z.string().describe("Resumo do caso jurídico em 1 ou 2 frases curtas. Se não houver info, coloque 'Sem informações detalhadas'.")
           }),
-          prompt: `Você é um analista de dados jurídicos. O objetivo é higienizar os nomes das partes que vieram bagunçados de uma planilha Excel e extrair um resumo.\n\nDados brutos:\n${rawText}`
+          prompt: `Você é um analista de dados jurídicos. Higienize os nomes das partes e extraia um resumo.\n\nDados brutos:\n${rawText}`
         });
 
-        // Atualizar no banco
         await prisma.process.update({
           where: { id: proc.id },
           data: {
-            client: object.clientName,
             debtorName: object.debtorName,
-            subject: object.summary // Guardamos o resumo da IA no campo subject
+            subject: object.summary 
           }
         });
+        
+        if (proc.clientId) {
+          await prisma.client.update({
+            where: { id: proc.clientId },
+            data: { name: object.clientName }
+          });
+        }
 
         successCount++;
       } catch (err) {

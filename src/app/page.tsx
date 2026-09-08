@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import {
   AlertCircle, ArrowUpRight, Bell, BookOpenCheck, ChevronDown, CircleHelp,
   Clock3, FileText, Filter, FolderOpen, LayoutDashboard, LifeBuoy, Menu,
-  MoreHorizontal, RefreshCw, Search, Settings2, ShieldCheck, Upload, Users,
+  MoreHorizontal, RefreshCw, Search, Settings2, ShieldCheck, Upload, Users, Wand2,
 } from "lucide-react";
 
 type Status = "Em dia" | "Aguardando judiciário" | "Revisar" | "Possível pendência";
