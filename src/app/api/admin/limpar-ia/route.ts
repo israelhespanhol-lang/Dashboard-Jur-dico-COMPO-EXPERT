@@ -1,14 +1,17 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { generateObject } from 'ai';
-import { openai } from '@ai-sdk/openai';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { z } from 'zod';
 
 export async function POST() {
   try {
-    if (!process.env.OPENAI_API_KEY) {
-      return NextResponse.json({ error: "Chave da OpenAI não configurada (OPENAI_API_KEY)." }, { status: 400 });
+    const apiKey = process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+    if (!apiKey) {
+      return NextResponse.json({ error: "Chave do Gemini não configurada (GEMINI_API_KEY)." }, { status: 400 });
     }
+
+    const google = createGoogleGenerativeAI({ apiKey });
 
     const processes = await prisma.process.findMany({
       take: 200,
@@ -37,7 +40,7 @@ export async function POST() {
       
       try {
         const { object } = await generateObject({
-          model: openai('gpt-4o-mini'),
+          model: google('gemini-1.5-flash'),
           schema: z.object({
             clientName: z.string().describe("Nome limpo, puro e exato do cliente/autor, sem número do processo, juiz ou CPF/CNPJ."),
             debtorName: z.string().describe("Nome limpo, puro e exato do devedor/réu, sem informações processuais."),

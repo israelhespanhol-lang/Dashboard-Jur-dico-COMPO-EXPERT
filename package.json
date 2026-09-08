@@ -11,6 +11,7 @@
     "db:migrate": "dotenv -e .env.local -- prisma migrate dev"
   },
   "dependencies": {
+    "@ai-sdk/google": "^4.0.65",
     "@ai-sdk/openai": "^4.0.61",
     "@prisma/client": "^6.16.2",
     "ai": "^7.0.94",
