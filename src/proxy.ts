@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   // Verifica se o usuário tem o cookie de autenticação falso que criamos no login
   const isAuthenticated = request.cookies.has('compo_auth');
   const path = request.nextUrl.pathname;
