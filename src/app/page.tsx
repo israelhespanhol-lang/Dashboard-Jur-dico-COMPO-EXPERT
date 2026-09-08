@@ -94,6 +94,8 @@ export default function Home() {
       if (!response.ok) throw new Error(data.error || "Falha na limpeza.");
       
       setSyncMessage(data.message);
+      alert(data.message); // Alerta visual forçado
+      
       if (data.count > 0) {
         const pResponse = await fetch("/api/processos");
         if (pResponse.ok) {
@@ -103,6 +105,7 @@ export default function Home() {
       }
     } catch (error: any) {
       setSyncMessage(error.message || "Erro ao conectar com a IA.");
+      alert(error.message || "Erro ao conectar com a IA."); // Alerta visual forçado
     } finally {
       setCleaning(false);
     }
