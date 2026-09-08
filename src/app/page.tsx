@@ -24,6 +24,7 @@ export default function Home() {
   const [activeFilter, setActiveFilter] = useState<"Todos" | Status | "Com publicações (DJEN)">("Todos");
   const [search, setSearch] = useState("");
   const [syncing, setSyncing] = useState(false);
+  const [cleaning, setCleaning] = useState(false);
   const [syncMessage, setSyncMessage] = useState("");
   const [lastSync, setLastSync] = useState<string | null>(null);
   const [providerStatuses, setProviderStatuses] = useState<Record<string, ProviderHealth>>({});
@@ -84,6 +85,29 @@ export default function Home() {
     finally { setSyncing(false); }
   };
   
+  const cleanAI = async () => {
+    setCleaning(true);
+    setSyncMessage("Iniciando limpeza com Inteligência Artificial...");
+    try {
+      const response = await fetch("/api/admin/limpar-ia", { method: "POST" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Falha na limpeza.");
+      
+      setSyncMessage(data.message);
+      if (data.count > 0) {
+        const pResponse = await fetch("/api/processos");
+        if (pResponse.ok) {
+          const items = await pResponse.json();
+          if (items.length) setProcesses(items);
+        }
+      }
+    } catch (error: any) {
+      setSyncMessage(error.message || "Erro ao conectar com a IA.");
+    } finally {
+      setCleaning(false);
+    }
+  };
+
   const showNotice = (text: string) => { setNotice(text); window.setTimeout(() => setNotice(""), 2800); };
   const datajudStatus = providerStatuses.DATAJUD?.status ?? "not_configured";
   const djenStatus = providerStatuses.DJEN?.status ?? "not_configured";
@@ -104,7 +128,14 @@ export default function Home() {
     <section className="content-area">
       <header className="topbar"><button className="mobile-menu" aria-label="Abrir menu" onClick={() => showNotice("Use a navegação lateral para acessar as áreas do radar.")}><Menu size={20} /></button><div className="breadcrumbs"><span>Workspace</span><b>/</b><strong>Dashboard</strong></div><div className="topbar-actions"><div className="top-search"><Search size={16} /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar processo, cliente..." /></div><button className="icon-button" aria-label="Ajuda" onClick={() => showNotice("O radar consulta fontes oficiais e sempre requer validação humana.")}><CircleHelp size={18} /></button><button className="icon-button notification" aria-label="Notificações" onClick={() => setActiveFilter("Possível pendência")}><Bell size={18} /><i /></button><button className="top-avatar" aria-label="Perfil" onClick={() => showNotice("Perfil ativo: Carolina · Administradora")}>CA</button></div></header>
       <div className="page-content">
-        <section className="page-heading"><div><p className="eyebrow">TERÇA-FEIRA, 08 DE SETEMBRO DE 2026</p><h1>Bom dia, Carolina <span>✦</span></h1><p className="heading-copy">Aqui está o panorama dos processos que merecem sua atenção hoje.</p>{syncMessage && <p className={`sync-message ${syncing ? "is-loading" : ""}`}><span />{syncMessage}{lastSync && !syncing && <small>Atualizado às {lastSync}</small>}</p>}</div><button className={`sync-button ${syncing ? "syncing" : ""}`} onClick={sync} disabled={syncing}><RefreshCw size={17} />{syncing ? "Sincronizando..." : "Atualizar processos"}</button></section>
+        <section className="page-heading"><div><p className="eyebrow">TERÇA-FEIRA, 08 DE SETEMBRO DE 2026</p><h1>Bom dia, Carolina <span>✦</span></h1><p className="heading-copy">Aqui está o panorama dos processos que merecem sua atenção hoje.</p>{syncMessage && <p className={`sync-message ${syncing || cleaning ? "is-loading" : ""}`}><span />{syncMessage}{lastSync && !syncing && !cleaning && <small>Atualizado às {lastSync}</small>}</p>}</div>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button className={`sync-button ${cleaning ? "syncing" : ""}`} onClick={cleanAI} disabled={cleaning || syncing} style={{ background: '#7c3aed', color: 'white', borderColor: '#7c3aed' }}>
+              <Wand2 size={17} />{cleaning ? "Processando..." : "Limpeza IA"}
+            </button>
+            <button className={`sync-button ${syncing ? "syncing" : ""}`} onClick={sync} disabled={syncing || cleaning}><RefreshCw size={17} />{syncing ? "Sincronizando..." : "Atualizar processos"}</button>
+          </div>
+        </section>
         <section className="summary-grid" aria-label="Resumo dos processos">
           <Summary icon={<ShieldCheck size={19} />} tone="navy" value={String(processes.length)} label="Processos monitorados" detail="dados persistidos no banco" />
           <Summary icon={<BookOpenCheck size={19} />} tone="green" value={String(processes.filter((item) => item.status === "Em dia").length)} label="Em dia" trend="banco" progress="73%" />
