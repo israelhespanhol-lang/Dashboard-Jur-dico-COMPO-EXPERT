@@ -113,3 +113,74 @@ html, body { overflow-x: hidden; }
 .login-btn:hover { background: #1a6b4b; transform: translateY(-1px); box-shadow: 0 8px 20px rgba(35, 131, 93, 0.25); }
 .login-footer { margin-top: auto; font-size: 11px; color: #9ab0a6; text-align: center; }
 @media (max-width: 900px) { .login-cover { display: none; } .login-form-area { width: 100%; padding: 40px; } }
+
+/* Cards de Processos */
+.process-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+  padding: 0 24px 24px;
+}
+
+.process-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.process-card:hover {
+  border-color: #23835d;
+  box-shadow: 0 8px 16px rgba(35, 131, 93, 0.08);
+  transform: translateY(-2px);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-body h3 {
+  font-size: 16px;
+  color: var(--navy);
+  margin: 0 0 4px 0;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.card-body .court-info {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0 0 16px 0;
+}
+
+.card-body .client-info {
+  font-size: 14px;
+  color: #334155;
+  background: #f8fafc;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #f1f5f9;
+}
+
+.card-body .client-info strong {
+  display: block;
+  color: var(--navy);
+  margin-bottom: 2px;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid #f1f5f9;
+}

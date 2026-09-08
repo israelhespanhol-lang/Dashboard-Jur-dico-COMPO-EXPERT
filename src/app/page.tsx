@@ -155,24 +155,28 @@ export default function Home() {
               </button>
             )}
           </div>
-          <div className="table-wrap">
-            <table>
-              <thead><tr><th>Processo</th><th>Cliente / devedor</th><th>Resumo técnico</th><th>Data</th><th>Status</th><th>Responsável</th><th /></tr></thead>
-              <tbody>
-                {filtered.map((item, index) => 
-                  <tr key={`${item.number}-${index}`} onClick={() => setSelectedProcess(item)}>
-                    <td><div className="process-cell"><span className="process-icon"><FileText size={15} /></span><div><b>{item.number}</b><small>{item.court}</small></div>{item.newMovement && <span className="new-badge">NOVO</span>}</div></td>
-                    <td><div className="client-cell"><b>{item.client}</b><small>{item.debtor}{item.rj && <span className="rj-badge">RJ</span>}</small></div></td>
-                    <td title={item.movementDetail}><span className="movement-cell">{item.movement}</span><small className="source-cell">Fonte oficial · DataJud</small></td>
-                    <td><span className="date-cell">{item.date}</span></td>
-                    <td title={item.statusDetail}><span className={`status-pill ${statusStyles[item.status]}`}><i />{item.status}</span></td>
-                    <td><span className={item.owner === "Sem responsável" ? "owner unassigned" : "owner"}>{item.owner === "Sem responsável" ? "Atribuir" : item.owner}</span></td>
-                    <td><button className="row-more" aria-label="Ações do processo" onClick={(event) => { event.stopPropagation(); setSelectedProcess(item); }}><MoreHorizontal size={17} /></button></td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-            {filtered.length === 0 && <div className="empty-state">Nenhum processo encontrado para esta busca.</div>}
+          <div className="process-cards-grid">
+            {filtered.map((item, index) => 
+              <div key={`${item.number}-${index}`} className="process-card" onClick={() => setSelectedProcess(item)}>
+                <div className="card-header">
+                  <span className={`status-pill ${statusStyles[item.status]}`}><i />{item.status}</span>
+                  <small className="date-cell">{item.date}</small>
+                </div>
+                <div className="card-body">
+                  <h3>{item.number}</h3>
+                  <p className="court-info">{item.court}</p>
+                  <div className="client-info">
+                    <strong>{item.client}</strong>
+                    <span>vs {item.debtor} {item.rj && <span className="rj-badge">RJ</span>}</span>
+                  </div>
+                </div>
+                <div className="card-footer">
+                  <button className="text-button" onClick={(e) => { e.stopPropagation(); setSelectedProcess(item); }}>Ver detalhes <ArrowUpRight size={15} /></button>
+                  {item.newMovement && <span className="new-badge">NOVO</span>}
+                </div>
+              </div>
+            )}
+            {filtered.length === 0 && <div className="empty-state" style={{gridColumn: '1 / -1'}}>Nenhum processo encontrado para esta busca.</div>}
           </div>
           <div className="table-footer">
             <span>Mostrando <b>{filtered.length}</b> de {processes.length} processos</span>
