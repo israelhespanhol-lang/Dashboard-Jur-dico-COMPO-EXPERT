@@ -171,9 +171,21 @@ html, body { overflow-x: hidden; }
 }
 
 .card-body .client-info strong {
-  display: block;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
   color: var(--navy);
   margin-bottom: 2px;
+  line-height: 1.4;
+}
+
+.card-body .client-info span {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.4;
 }
 
 .card-footer {
