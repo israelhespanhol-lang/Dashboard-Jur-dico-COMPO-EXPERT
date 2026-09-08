@@ -8,8 +8,15 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  const [errorMsg, setErrorMsg] = useState("");
+
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
+    if (password !== "compo2026") {
+      setErrorMsg("E-mail corporativo ou senha incorretos.");
+      return;
+    }
+    setErrorMsg("");
     setIsLoading(true);
     // Gravar um cookie provisório de 1 dia para liberar o acesso no middleware
     document.cookie = "compo_auth=true; path=/; max-age=86400";
@@ -91,14 +98,17 @@ export default function LoginPage() {
             </div>
           </div>
           
-          <div className="login-options">
-            <label>
-              <input type="checkbox" defaultChecked /> Manter conectado
-            </label>
-            <a href="#">Esqueceu a senha?</a>
-          </div>
-          
-          <button type="submit" className="login-btn" disabled={isLoading}>
+          <div className="login-checkbox">
+                <label>
+                  <input type="checkbox" defaultChecked />
+                  <span>Manter conectado</span>
+                </label>
+                <a href="#" className="forgot-link">Esqueceu a senha?</a>
+              </div>
+
+              {errorMsg && <div style={{ color: '#d93025', fontSize: '14px', marginBottom: '15px', fontWeight: 500 }}>{errorMsg}</div>}
+
+              <button type="submit" className={`login-btn ${isLoading ? 'loading' : ''}`} disabled={isLoading}>
             {isLoading ? "Autenticando..." : "Entrar no sistema"} 
             {!isLoading && <ArrowRight size={18} />}
           </button>
