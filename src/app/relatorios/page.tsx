@@ -118,8 +118,8 @@ export default function RelatoriosPage() {
           <ArrowUpRight size={15} />
         </div>
         <div className="profile">
-          <span className="avatar avatar-ink">MS</span>
-          <div><b>Mariana Silva</b><small>Administradora</small></div>
+          <span className="avatar avatar-ink">CA</span>
+          <div><b>Carolina</b><small>Administradora</small></div>
           <MoreHorizontal size={17} />
         </div>
       </aside>
@@ -136,7 +136,7 @@ export default function RelatoriosPage() {
             <button className="icon-button" aria-label="Ajuda" onClick={() => showNotice("Módulo de inteligência e dados agregados.")}>
               <CircleHelp size={18} />
             </button>
-            <button className="top-avatar" aria-label="Perfil" onClick={() => showNotice("Perfil ativo: Mariana Silva · Administradora")}>MS</button>
+            <button className="top-avatar" aria-label="Perfil" onClick={() => showNotice("Perfil ativo: Carolina · Administradora")}>CA</button>
           </div>
         </header>
 
