@@ -11,6 +11,8 @@ export default function LoginPage() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    // Gravar um cookie provisório de 1 dia para liberar o acesso no middleware
+    document.cookie = "compo_auth=true; path=/; max-age=86400";
     // Simular carregamento e redirecionar
     setTimeout(() => {
       window.location.href = "/";
