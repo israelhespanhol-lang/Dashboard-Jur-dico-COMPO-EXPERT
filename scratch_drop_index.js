@@ -5,9 +5,8 @@ const prisma = new PrismaClient({
 });
 
 async function main() {
-  const result = await prisma.process.deleteMany({
-    where: { processNumber: { startsWith: 'INVALID-' } }
-  });
-  console.log(`Deleted ${result.count} invalid processes`);
+  console.log('Processes:', await prisma.process.count());
+  console.log('Movements (DataJud):', await prisma.movement.count());
+  console.log('Communications (DJEN):', await prisma.communication.count());
 }
 main().finally(() => prisma.$disconnect());

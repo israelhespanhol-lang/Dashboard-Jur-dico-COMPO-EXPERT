@@ -19,10 +19,39 @@ export class DataJudProvider implements JudicialProvider {
     } catch { return { provider: this.name, status: "unavailable", checkedAt: new Date().toISOString(), message: "Fonte temporariamente indisponível" }; }
   }
 
+  private getCourtAliasFromCNJ(cnj: string): string {
+    const parts = cnj.split('.');
+    if (parts.length >= 5) {
+      const j = parts[3]; // Justiça
+      const tr = parts[4]; // Tribunal
+      
+      if (j === '8') { // Justiça Estadual (TJ)
+        const ufs: Record<string, string> = {
+          '01': 'ac', '02': 'al', '03': 'ap', '04': 'am', '05': 'ba', '06': 'ce',
+          '07': 'df', '08': 'es', '09': 'go', '10': 'ma', '11': 'mt', '12': 'ms',
+          '13': 'mg', '14': 'pa', '15': 'pb', '16': 'pr', '17': 'pe', '18': 'pi',
+          '19': 'rj', '20': 'rn', '21': 'rs', '22': 'ro', '23': 'rr', '24': 'sc',
+          '25': 'se', '26': 'sp', '27': 'to'
+        };
+        const uf = ufs[tr];
+        if (uf) return `api_publica_tj${uf}`;
+      } else if (j === '5') { // Justiça do Trabalho (TRT)
+        return `api_publica_trt${parseInt(tr)}`;
+      } else if (j === '4') { // Justiça Federal (TRF)
+        return `api_publica_trf${parseInt(tr)}`;
+      }
+    }
+    return this.alias; // Fallback
+  }
+
   async getMovements(processNumber: string): Promise<JudicialMovement[]> {
     if (!this.apiKey) return [];
-    const { normalized } = normalizeCNJNumber(processNumber);
-    const response = await fetchWithTimeout(`${this.baseUrl}/${this.alias}/_search`, { method: "POST", headers: { Authorization: `APIKey ${this.apiKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ size: 1, query: { match: { numero: normalized } } }) });
+    const { normalized, validStructure } = normalizeCNJNumber(processNumber);
+    if (!validStructure) return [];
+    
+    const courtAlias = this.getCourtAliasFromCNJ(normalized);
+    
+    const response = await fetchWithTimeout(`${this.baseUrl}/${courtAlias}/_search`, { method: "POST", headers: { Authorization: `APIKey ${this.apiKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ size: 1, query: { match: { numero: normalized } } }) });
     if (!response.ok) throw new Error(`DataJud respondeu HTTP ${response.status}`);
     const data = await response.json() as { hits?: { hits?: DataJudHit[] } };
     const source = data.hits?.hits?.[0]?._source;

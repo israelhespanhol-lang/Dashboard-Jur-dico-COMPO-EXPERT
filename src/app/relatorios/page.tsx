@@ -172,7 +172,7 @@ export default function RelatoriosPage() {
                   <div style={{ width: '100%', height: 320 }}>
                     <ResponsiveContainer>
                       <PieChart>
-                        <Pie data={statusData} cx="50%" cy="45%" innerRadius={70} outerRadius={110} paddingAngle={4} dataKey="value" label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}>
+                        <Pie data={statusData} cx="50%" cy="45%" innerRadius={70} outerRadius={110} paddingAngle={4} dataKey="value" label={({ name, percent }) => `${((percent || 0) * 100).toFixed(0)}%`}>
                           {statusData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[entry.name as Status] || "#94a3b8"} />)}
                         </Pie>
                         <RechartsTooltip formatter={(value) => [`${value} processos`, "Total"]} />

@@ -11,7 +11,8 @@ type Status = "Em dia" | "Aguardando judiciário" | "Revisar" | "Possível pend�
 type Process = { client: string; debtor: string; number: string; court: string; movement: string; movementDetail?: string; date: string; status: Status; statusDetail?: string; owner: string; newMovement?: boolean; rj?: boolean; recentMovements?: {date: string, description: string}[]; recentCommunications?: {date: string, description: string}[] };
 type ProviderHealth = { provider: string; status: "operational" | "not_configured" | "unavailable"; message?: string };
 
-const navItems = [
+type NavItem = { label: string; icon: any; active?: boolean; count?: number | string };
+const navItems: NavItem[] = [
   { label: "Dashboard", icon: LayoutDashboard, active: true }, { label: "Processos", icon: FolderOpen },
   { label: "Pendências", icon: AlertCircle }, { label: "Novidades", icon: Bell },
   { label: "Relatórios", icon: FileText }, { label: "Importar", icon: Upload },
