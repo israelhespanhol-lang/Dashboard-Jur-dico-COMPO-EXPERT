@@ -23,11 +23,13 @@ export default function LoginPage() {
     <div className="login-wrapper">
       <div className="login-cover">
         <div className="login-cover-content">
-          <img 
-            src="/compo-expert-logo.svg" 
-            alt="COMPO EXPERT Logo" 
-            style={{ height: '55px', marginBottom: '40px', filter: 'brightness(0) invert(1)' }} 
-          />
+          <div style={{ textAlign: 'center', width: '100%', marginBottom: '60px' }}>
+            <img 
+              src="/compo-expert-logo.svg" 
+              alt="COMPO EXPERT Logo" 
+              style={{ height: '140px', filter: 'brightness(0) invert(1)', display: 'inline-block' }} 
+            />
+          </div>
           <h1>
             Inteligência e controle para o seu <span>Radar Jurídico</span>
           </h1>
