@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: monitoramento-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: monitoramento
+      POSTGRES_USER: monitoramento
+      POSTGRES_PASSWORD: monitoramento-local
+    ports:
+      - "5432:5432"
+    volumes:
+      - monitoramento_pgdata:/var/lib/postgresql/data
+
+volumes:
+  monitoramento_pgdata:

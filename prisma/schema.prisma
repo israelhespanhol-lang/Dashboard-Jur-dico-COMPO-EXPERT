@@ -1,0 +1,229 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserRole {
+  ADMIN
+  JURIDICO
+  GESTOR
+  LEITURA
+}
+
+enum ActionStatus {
+  PENDING
+  IN_PROGRESS
+  DONE
+  DISMISSED
+  WAITING
+}
+
+enum AlertSeverity {
+  INFO
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum AlertStatus {
+  OPEN
+  REVIEWING
+  RESOLVED
+  DISMISSED
+}
+
+enum ReviewClassification {
+  OK
+  WAITING_COURT
+  ACTION_REQUIRED
+  UNDER_REVIEW
+  MANUAL_CHECK
+}
+
+model User {
+  id String @id @default(cuid())
+  name String
+  email String @unique
+  role UserRole @default(LEITURA)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  actions InternalAction[]
+  reviews ProcessReview[]
+  auditLogs AuditLog[]
+  @@map("users")
+}
+
+model Client {
+  id String @id @default(cuid())
+  name String
+  document String?
+  notes String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  processes Process[]
+  @@map("clients")
+}
+
+model Process {
+  id String @id @default(cuid())
+  processNumber String @db.VarChar(32) @map("process_number")
+  processNumberNormalized String @db.VarChar(20) @unique @map("process_number_normalized")
+  clientId String? @map("client_id")
+  client Client? @relation(fields: [clientId], references: [id])
+  debtorName String? @map("debtor_name")
+  court String?
+  courtAlias String? @map("court_alias")
+  jurisdictionDegree String? @map("jurisdiction_degree")
+  judicialBody String? @map("judicial_body")
+  processClass String? @map("process_class")
+  subject String?
+  caseValue Decimal? @map("case_value")
+  currentStatus String? @map("current_status")
+  electronicSystem String? @map("electronic_system")
+  secrecy Boolean @default(false)
+  priority Boolean @default(false)
+  origin String?
+  active Boolean @default(true)
+  importedLastMovement String? @map("imported_last_movement")
+  importedStatus String? @map("imported_status")
+  importedDate DateTime? @map("imported_date")
+  lastSyncAt DateTime? @map("last_sync_at")
+  lastExternalMovementAt DateTime? @map("last_external_movement_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  movements Movement[]
+  communications Communication[]
+  actions InternalAction[]
+  alerts Alert[]
+  reviews ProcessReview[]
+  @@index([courtAlias])
+  @@map("processes")
+}
+
+model Movement {
+  id String @id @default(cuid())
+  processId String @map("process_id")
+  process Process @relation(fields: [processId], references: [id])
+  provider String
+  externalId String? @map("external_id")
+  movementCode String? @map("movement_code")
+  movementName String? @map("movement_name")
+  movementDescription String? @map("movement_description")
+  movementDate DateTime? @map("movement_date")
+  publishedAt DateTime? @map("published_at")
+  rawPayload Json? @map("raw_payload")
+  contentHash String @map("content_hash")
+  createdAt DateTime @default(now()) @map("created_at")
+  @@unique([provider, externalId])
+  @@unique([processId, contentHash])
+  @@index([processId, movementDate])
+  @@map("movements")
+}
+
+model Communication {
+  id String @id @default(cuid())
+  processId String @map("process_id")
+  process Process @relation(fields: [processId], references: [id])
+  provider String
+  externalId String? @map("external_id")
+  type String?
+  availableAt DateTime? @map("available_at")
+  publishedAt DateTime? @map("published_at")
+  acknowledgedAt DateTime? @map("acknowledged_at")
+  description String?
+  fullText String? @map("full_text")
+  rawPayload Json? @map("raw_payload")
+  contentHash String @map("content_hash")
+  createdAt DateTime @default(now()) @map("created_at")
+  @@unique([provider, externalId])
+  @@unique([processId, contentHash])
+  @@map("communications")
+}
+
+model InternalAction {
+  id String @id @default(cuid())
+  processId String @map("process_id")
+  process Process @relation(fields: [processId], references: [id])
+  actionType String @map("action_type")
+  description String?
+  responsibleUserId String? @map("responsible_user_id")
+  responsibleUser User? @relation(fields: [responsibleUserId], references: [id])
+  status ActionStatus @default(PENDING)
+  performedAt DateTime? @map("performed_at")
+  protocolNumber String? @map("protocol_number")
+  evidenceUrl String? @map("evidence_url")
+  notes String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  @@index([processId, status])
+  @@map("internal_actions")
+}
+
+model Alert {
+  id String @id @default(cuid())
+  processId String @map("process_id")
+  process Process @relation(fields: [processId], references: [id])
+  severity AlertSeverity
+  category String
+  title String
+  description String
+  sourceMovementId String? @map("source_movement_id")
+  status AlertStatus @default(OPEN)
+  detectedAt DateTime @default(now()) @map("detected_at")
+  reviewedAt DateTime? @map("reviewed_at")
+  reviewedBy String? @map("reviewed_by")
+  resolution String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  @@index([status, severity])
+  @@map("alerts")
+}
+
+model ProcessReview {
+  id String @id @default(cuid())
+  processId String @map("process_id")
+  process Process @relation(fields: [processId], references: [id])
+  userId String @map("user_id")
+  user User @relation(fields: [userId], references: [id])
+  classification ReviewClassification
+  comment String?
+  createdAt DateTime @default(now()) @map("created_at")
+  @@map("process_reviews")
+}
+
+model SyncRun {
+  id String @id @default(cuid())
+  startedAt DateTime @default(now()) @map("started_at")
+  finishedAt DateTime? @map("finished_at")
+  provider String
+  totalProcesses Int @default(0) @map("total_processes")
+  successful Int @default(0)
+  failed Int @default(0)
+  newMovements Int @default(0) @map("new_movements")
+  newAlerts Int @default(0) @map("new_alerts")
+  errorSummary String? @map("error_summary")
+  @@index([provider, startedAt])
+  @@map("sync_runs")
+}
+
+model AuditLog {
+  id String @id @default(cuid())
+  userId String? @map("user_id")
+  user User? @relation(fields: [userId], references: [id])
+  action String
+  entity String
+  entityId String @map("entity_id")
+  before Json?
+  after Json?
+  ip String?
+  userAgent String? @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at")
+  @@index([entity, entityId, createdAt])
+  @@map("audit_logs")
+}
