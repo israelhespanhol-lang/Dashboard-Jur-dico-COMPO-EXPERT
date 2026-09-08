@@ -62,8 +62,12 @@ export async function POST() {
         }
 
         successCount++;
-      } catch (err) {
+      } catch (err: any) {
         console.error(`Erro ao processar IA no processo ${proc.processNumber}:`, err);
+        // Se for o primeiro erro, abortar e retornar o erro pro usuário ver
+        return NextResponse.json({ 
+          error: `Erro na IA (Verifique sua chave ou saldo): ${err.message || 'Falha desconhecida'}` 
+        }, { status: 400 });
       }
     }
 
